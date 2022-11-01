@@ -22,10 +22,12 @@ class Node:
     def __copy__(self):
         return Node(self.color)
 
-    def to_image(self, size: int):
-        result = Image.new('RGB', (size, size), color=self.color)
+    def to_image(self, width: int, height: int = -1):
+        if height == -1:
+            height = width
+        result = Image.new('RGB', (width, height), color=self.color)
         draw = ImageDraw.Draw(result)
-        draw.rectangle((0, 0, size, size), outline='black', width=1)
+        draw.rectangle((0, 0, width, height), outline='black', width=1)
         return result
 
     def flatten(self):
@@ -46,13 +48,16 @@ class QuadTree:
     def __init__(self, children: list):
         self.children: list[Union[QuadTree, Node]] = children
 
-    def to_image(self, size: int):
-        half_size = size // 2
-        result = Image.new('RGB', (size, size))
+    def to_image(self, width: int, height: int = -1):
+        if height == -1:
+            height = width
+        half_width = width // 2
+        half_height = height // 2
+        result = Image.new('RGB', (width, height))
         for i in range(2):
             for j in range(2):
-                image = self.children[2 * j + i].to_image(half_size)
-                result.paste(image, (half_size * i, half_size * j))
+                image = self.children[2 * j + i].to_image(half_width, half_height)
+                result.paste(image, (half_width * i, half_height * j))
         return result
 
     def flatten(self) -> list:
