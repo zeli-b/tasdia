@@ -1,0 +1,4 @@
+SHTELO_VANILLA = '#fdde59'
+SHTELO_DOWNY = '#6ccccc'
+SHTELO_BLACK = '#2c2c2c'
+SHTELO_WHITE = '#f7f7f9'
