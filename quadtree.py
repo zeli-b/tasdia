@@ -37,6 +37,10 @@ class Node:
     def to_quadtree(self) -> 'QuadTree':
         return QuadTree([copy(self) for _ in range(4)])
 
+    @staticmethod
+    def get_depth():
+        return 0
+
 
 class QuadTree:
     @staticmethod
@@ -48,6 +52,7 @@ class QuadTree:
 
     def __init__(self, children: list):
         self.children: list[Union[QuadTree, Node]] = children
+        self.version = 0
 
     def to_image(self, width: int, height: int = -1, line_color=None):
         if height == -1:
@@ -65,6 +70,8 @@ class QuadTree:
         return list(map(lambda x: x.flatten(), self.children))
 
     def fill(self, address: list, node: Node):
+        self.version += 1
+
         address = copy(address)
         index = address.pop(0)
 
@@ -85,6 +92,9 @@ class QuadTree:
             if self.children[i] != self.children[3]:
                 return False
         return True
+
+    def get_depth(self) -> int:
+        return max(map(lambda x: x.get_depth(), self.children)) + 1
 
 
 def structify(flattened) -> Union[QuadTree, Node]:
