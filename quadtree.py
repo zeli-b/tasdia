@@ -2,7 +2,10 @@ from copy import copy
 from typing import Iterator
 
 
-def path_to_pos(path: list[int]):
+def path_to_pos(path: list[int]) -> int:
+    """
+    0과 1로 이루어진 path list를 position 값으로 변환하여 출력한다.
+    """
     pos = 0
     while path:
         pos <<= 1
@@ -10,7 +13,10 @@ def path_to_pos(path: list[int]):
     return pos
 
 
-def pos_to_path(number: int):
+def pos_to_path(number: int) -> list:
+    """
+    position 값을 path list로 변환하여 출력한다.
+    """
     path = list()
     while number:
         path.append(number & 1)
@@ -21,15 +27,24 @@ def pos_to_path(number: int):
     return path
 
 
-def pos_to_path_int(pos: int, unit: int):
+def pos_to_path_int(pos: int, unit: int) -> int:
+    """
+    position 값을 path int로 변환하여 출력한다.
+    """
     return int(format(pos, f'0{unit}b')[::-1], 2)
 
 
-def path_int_to_pos(path_int: int, unit: int):
+def path_int_to_pos(path_int: int, unit: int) -> int:
+    """
+    path int을 position 값으로 변환하여 출력한다.
+    """
     return int((format(path_int, 'b')[::-1] + '0'*unit)[:unit], 2)
 
 
 def range_pos(start_pos: int, end_pos: int, unit: int) -> Iterator[int]:
+    """
+    ``start_pos``부터 ``end_pos``까지를 순회하는 iterator를 반환한다.
+    """
     start_path = pos_to_path_int(start_pos, unit)
     end_path = pos_to_path_int(end_pos, unit)
 
@@ -56,19 +71,45 @@ class QuadTree:
         return self
 
     def divide(self):
+        """
+        ``self``에 ``self``와 같은 ``value``를 가진 자식 사분트리를 가지게 한다.
+
+        반대 연산은 ``self.combine``
+        """
         self.children = tuple(copy(self) for _ in range(4))
         return self
 
-    def has_child(self):
+    def combine(self, with_=None):
+        """
+        ``self``에 children이 할당되어있는 것을 없앤다.
+
+        반대 연산은 ``self.divide``
+        """
+        self.children = tuple()
+        if with_ is not None:
+            self.value = with_
+        return self
+
+    def is_divided(self):
+        """
+        ``self``가 나누어져있는 트리인지 확인한다.
+        """
         return len(self.children) == 4
 
     def get_depth(self) -> int:
-        if not self.has_child():
+        """
+        ``self``로부터 더 이상 자식을 가지지 않기 위해서는 몇 세대를 거듭해야하는지 나타낸다.
+        만약 ``self``가 자식을 가지고 있지 않다면 0을 반환한다.
+        """
+        if not self.is_divided():
             return 0
 
         return max(map(lambda child: child.get_depth(), self.children))+1
 
-    def print_tree(self, *, indent_level: int = 0, x_path: tuple = tuple(), y_path: tuple = tuple()):
+    def print_tree(self, *, indent_level: int = 0, x_path: tuple = tuple(), y_path: tuple = tuple()) -> str:
+        """
+        트리의 내용을 확인하기 편리하도록 문자열로 정리된 트리를 출력한다.
+        """
         result = ''
         if indent_level == 0:
             result += '=== Tree ===\n'
@@ -91,6 +132,9 @@ class QuadTree:
         return result
 
     def get(self, x_pos: int, y_pos: int):
+        """
+        트리 면 속 특정 좌표에 할당된 값을 출력한다.
+        """
         x_path = pos_to_path(x_pos)
         y_path = pos_to_path(y_pos)
 
