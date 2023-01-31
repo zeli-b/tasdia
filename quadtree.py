@@ -1,123 +1,134 @@
-import json
 from copy import copy
-from typing import Union
-
-from PIL import Image, ImageDraw
+from typing import Iterator
 
 
-class Node:
-    @staticmethod
-    def structify(flattened) -> 'Node':
-        return Node(flattened)
+def path_to_pos(path: list[int]):
+    pos = 0
+    while path:
+        pos <<= 1
+        pos += int(path.pop())
+    return pos
 
-    def __init__(self, color):
-        self.color = color
 
-    def __eq__(self, other):
-        if isinstance(other, Node):
-            return all((self.color == other.color,))
+def pos_to_path(number: int):
+    path = list()
+    while number:
+        path.append(number & 1)
+        number >>= 1
 
-        return False
+    if not path:
+        path.append(0)
+    return path
 
-    def __copy__(self):
-        return Node(self.color)
 
-    def to_image(self, width: int, height: int = -1, line_color=None):
-        if height == -1:
-            height = width
-        result = Image.new('RGB', (width, height), color=self.color)
-        draw = ImageDraw.Draw(result)
-        if line_color:
-            draw.rectangle((0, 0, width, height), outline=line_color, width=1)
-        return result
+def pos_to_path_int(pos: int, unit: int):
+    return int(format(pos, f'0{unit}b')[::-1], 2)
 
-    def flatten(self):
-        return str(self.color)
 
-    def to_quadtree(self) -> 'QuadTree':
-        return QuadTree([copy(self) for _ in range(4)])
+def path_int_to_pos(path_int: int, unit: int):
+    return int((format(path_int, 'b')[::-1] + '0'*unit)[:unit], 2)
 
-    @staticmethod
-    def get_depth():
-        return 0
+
+def range_pos(start_pos: int, end_pos: int, unit: int) -> Iterator[int]:
+    start_path = pos_to_path_int(start_pos, unit)
+    end_path = pos_to_path_int(end_pos, unit)
+
+    return map(lambda x: path_int_to_pos(x, unit), range(start_path, end_path))
 
 
 class QuadTree:
-    @staticmethod
-    def structify(flattened) -> 'QuadTree':
-        children = list()
-        for raw_child in flattened:
-            children.append(structify(raw_child))
-        return QuadTree(children)
+    def __init__(self, value):
+        self.value = value
 
-    def __init__(self, children: list):
-        self.children: list[Union[QuadTree, Node]] = children
-        self.version = 0
+        self.children: tuple[QuadTree] = tuple()
 
-    def to_image(self, width: int, height: int = -1, line_color=None):
-        if height == -1:
-            height = width
-        half_width = width // 2
-        half_height = height // 2
-        result = Image.new('RGB', (width, height))
-        for i in range(2):
-            for j in range(2):
-                image = self.children[2 * j + i].to_image(half_width, half_height, line_color)
-                result.paste(image, (half_width * i, half_height * j))
-        return result
+    def __repr__(self):
+        return f'<QuadTree value={self.value}, children={self.children}>'
 
-    def flatten(self) -> list:
-        return list(map(lambda x: x.flatten(), self.children))
+    def __copy__(self):
+        return QuadTree(self.value)
 
-    def fill(self, address: list, node: Node):
-        self.version += 1
+    def __str__(self):
+        return self.print_tree()
 
-        address = copy(address)
-        index = address.pop(0)
+    def set_value(self, value):
+        self.value = value
+        return self
 
-        if not len(address):
-            self.children[index] = node
-            return
+    def divide(self):
+        self.children = tuple(copy(self) for _ in range(4))
+        return self
 
-        child = self.children[index]
-        if not isinstance(child, QuadTree):
-            self.children[index] = child.to_quadtree()
-        self.children[index].fill(address, node)
-
-        if self.children[index].is_having_same_children():
-            self.children[index] = self.children[index].children[0]
-
-    def is_having_same_children(self) -> bool:
-        for i in range(3):
-            if self.children[i] != self.children[3]:
-                return False
-        return True
+    def has_child(self):
+        return len(self.children) == 4
 
     def get_depth(self) -> int:
-        return max(map(lambda x: x.get_depth(), self.children)) + 1
+        if not self.has_child():
+            return 0
+
+        return max(map(lambda child: child.get_depth(), self.children))+1
+
+    def print_tree(self, *, indent_level: int = 0, x_path: tuple = tuple(), y_path: tuple = tuple()):
+        result = ''
+        if indent_level == 0:
+            result += '=== Tree ===\n'
+
+        indent_gap = f"{'  ' * (indent_level - 1)}{'- ' if indent_level > 0 else ''}"
+
+        x_pos = path_to_pos(list(x_path))
+        y_pos = path_to_pos(list(y_path))
+        line = f"{indent_gap}{self.value} ({x_pos}, {y_pos})"
+        result += line + '\n'
+
+        for i, child in enumerate(self.children):
+            y, x = divmod(i, 2)
+            result += child.print_tree(
+                indent_level=indent_level + 1,
+                x_path=x_path + (x,),
+                y_path=y_path + (y,)
+            )
+
+        return result
+
+    def get(self, x_pos: int, y_pos: int):
+        x_path = pos_to_path(x_pos)
+        y_path = pos_to_path(y_pos)
+
+        now = self
+        while x_path or y_path:
+            x = x_path.pop(0) if x_path else 0
+            y = y_path.pop(0) if y_path else 0
+            index = y*2 + x
+
+            if not now.children:
+                return now
+
+            now = now.children[index]
+
+        return now
 
 
-def structify(flattened) -> Union[QuadTree, Node]:
-    if isinstance(flattened, str):
-        return Node.structify(flattened)
-    else:
-        return QuadTree.structify(flattened)
+def _main():
+    qt = QuadTree(0)
+    print(qt.get_depth())
+
+    qt.divide()
+    qt.children[0].set_value(1)
+    qt.children[1].set_value(2)
+    qt.children[2].set_value(3)
+    qt.children[3].set_value(4)
+
+    qt.children[0].divide()
+    qt.children[0].children[0].set_value(5)
+    qt.children[0].children[1].set_value(6)
+    qt.children[0].children[2].set_value(7)
+    qt.children[0].children[3].set_value(8)
+
+    print(qt.get_depth())
+    print(qt)
+
+    print('qt(2, 0) =', qt.get(2, 1).value)
 
 
-def load(filename: str) -> 'QuadTree':
-    with open(filename, 'r') as file:
-        return structify(json.load(file))
-
-
-def get_address(x: float, y: float, depth: int) -> list:
-    unit = 2 ** (-depth)
-    x = int(x / unit)
-    y = int(y / unit)
-
-    result = list()
-    for _ in range(depth):
-        result.insert(0, 2 * (y & 0x1) + (x & 0x1))
-        x >>= 1
-        y >>= 1
-
-    return result
+if __name__ == '__main__':
+    _main()
