@@ -73,6 +73,7 @@ class QuadTree:
         self.value = value
 
         self.children: tuple[QuadTree] = tuple()
+        self.parent = None
 
     def __repr__(self):
         return f'<QuadTree value={self.value}, children={self.children}>'
@@ -94,6 +95,8 @@ class QuadTree:
         반대 연산은 ``self.combine``
         """
         self.children = tuple(copy(self) for _ in range(4))
+        for child in self.children:
+            child.parent = self
         return self
 
     def combine(self, with_=None):
@@ -176,7 +179,27 @@ class QuadTree:
     def set(self, x_pos: int, y_pos: int, unit: int, value):
         tree = self.get(x_pos, y_pos, unit)
         tree.combine(value)
+        tree.parent.simplify_upward()
         return tree
+
+    def simplify_upward(self):
+        """
+        ``self``부터 최상위 트리까지를 순회하며 child가 가지고 있는 값이 모두 같다면 combine한다.
+
+        이 메소드가 실행될 때에는 ``self``를 제외하고 그 어떤 부분에서도 자식이 모두 같은 값을 가지고 있지만 divide되어있는 트리가 없음을 상정한다.
+        """
+        if not self.is_divided():
+            return
+
+        value = self.children[0].value
+        for i in range(1, 3):
+            if self.children[i].value != value:
+                return
+
+        self.combine(value)
+
+        if self.parent is not None:
+            self.parent.simplify_upward()
 
     def get_family_path(self, tree: 'QuadTree'):
         """
@@ -217,19 +240,19 @@ def _main():
     qt.children[3].set_value(4)
 
     qt.children[0].divide()
-    qt.children[0].children[0].set_value(5)
-    qt.children[0].children[1].set_value(6)
-    qt.children[0].children[2].set_value(7)
-    qt.children[0].children[3].set_value(8)
+    print(qt.get_depth())
+    print(qt)
+
+    qt.children[0].children[1].set_value(5)
 
     print(qt.get_depth())
     print(qt)
 
-    subtree = qt.set(2, 0, 2, 9)
+    qt.set(2, 0, 2, 9)
     print(qt)
 
-    print(qt.get_family_path(subtree))
-    print(qt.get_position(subtree))
+    qt.set(2, 0, 2, 1)
+    print(qt)
 
 
 if __name__ == '__main__':
