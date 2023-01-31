@@ -1,4 +1,5 @@
 from copy import copy
+from math import inf
 from typing import Iterator
 
 
@@ -13,7 +14,7 @@ def path_to_pos(path: list[int]) -> int:
     return pos
 
 
-def pos_to_path(number: int) -> list:
+def pos_to_path(number: int, length: int = 1) -> list:
     """
     position 값을 path list로 변환하여 출력한다.
     """
@@ -22,7 +23,7 @@ def pos_to_path(number: int) -> list:
         path.append(number & 1)
         number >>= 1
 
-    if not path:
+    while len(path) < length:
         path.append(0)
     return path
 
@@ -131,15 +132,19 @@ class QuadTree:
 
         return result
 
-    def get(self, x_pos: int, y_pos: int):
+    def get(self, x_pos: int, y_pos: int, unit: int = inf):
         """
-        트리 면 속 특정 좌표에 할당된 값을 출력한다.
+        트리 면 속 특정 좌표에 할당된 트리를 출력한다.
         """
         x_path = pos_to_path(x_pos)
         y_path = pos_to_path(y_pos)
 
         now = self
+        i = 0
         while x_path or y_path:
+            if i >= unit:
+                break
+
             x = x_path.pop(0) if x_path else 0
             y = y_path.pop(0) if y_path else 0
             index = y*2 + x
@@ -148,8 +153,14 @@ class QuadTree:
                 return now
 
             now = now.children[index]
+            i += 1
 
         return now
+
+    def set(self, x_pos: int, y_pos: int, unit: int, value):
+        tree = self.get(x_pos, y_pos, unit)
+        tree.combine(value)
+        return tree
 
 
 def _main():
@@ -171,7 +182,8 @@ def _main():
     print(qt.get_depth())
     print(qt)
 
-    print('qt(2, 0) =', qt.get(2, 1).value)
+    qt.set(2, 0, 2, 9)
+    print(qt)
 
 
 if __name__ == '__main__':
