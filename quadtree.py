@@ -52,6 +52,22 @@ def range_pos(start_pos: int, end_pos: int, unit: int) -> Iterator[int]:
     return map(lambda x: path_int_to_pos(x, unit), range(start_path, end_path))
 
 
+def get_position_by_family_path(family_path):
+    """
+    ``family_path``의 position 값을 반환한다.
+    """
+    if family_path is None:
+        return None
+
+    x_path = list(map(lambda x: x[0], family_path))
+    y_path = list(map(lambda x: x[1], family_path))
+
+    x_pos = path_to_pos(x_path)
+    y_pos = path_to_pos(y_path)
+
+    return x_pos, y_pos
+
+
 class QuadTree:
     def __init__(self, value):
         self.value = value
@@ -162,6 +178,33 @@ class QuadTree:
         tree.combine(value)
         return tree
 
+    def get_family_path(self, tree: 'QuadTree'):
+        """
+        ``self``에서 ``tree``까지 이어지는 가족 계보를 반환한다.
+
+        만약 ``self``의 자식중에 ``tree``가 없다면 None을 반환한다.
+        """
+        try:
+            index = self.children.index(tree)
+        except ValueError:
+            for i, child in enumerate(self.children):
+                position = child.get_family_path(tree)
+                if position:
+                    y, x = divmod(i, 2)
+                    return ((x, y),) + position
+        else:
+            y, x = divmod(index, 2)
+            return (x, y),
+
+    def get_position(self, tree: 'QuadTree'):
+        """
+        ``self``에 대한 ``tree``의 position 값을 반환한다.
+
+        만약 ``self``의 자식중에 ``tree``가 없다면 None을 반환한다.
+        """
+        path = self.get_family_path(tree)
+        return get_position_by_family_path(path)
+
 
 def _main():
     qt = QuadTree(0)
@@ -182,8 +225,11 @@ def _main():
     print(qt.get_depth())
     print(qt)
 
-    qt.set(2, 0, 2, 9)
+    subtree = qt.set(2, 0, 2, 9)
     print(qt)
+
+    print(qt.get_family_path(subtree))
+    print(qt.get_position(subtree))
 
 
 if __name__ == '__main__':
