@@ -37,5 +37,5 @@ def quadtree_to_image(input_filename: str, output_filename: str, size):
 
 
 if __name__ == '__main__':
-    image_to_quadtree('out/sat.png', 'out/sat.json')
-    quadtree_to_image('out/sat.json', 'out/sat_visualize.png', 2048)
+    image_to_quadtree('out/sat_image.png', 'out/sat_quadtree.json')
+    quadtree_to_image('out/sat_quadtree.json', 'out/sat_quadtree_visualize.png', 2048)
