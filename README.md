@@ -5,6 +5,37 @@ Tasdia는 인공 세계관 [사트](http://www.shtelo.org/)의
 시간에 따른 지형의 변화, 시간에 따른 국가 점유상태의 변화 등
 세계관에 대한 이해와 관리를 편하게 하기 위해서 계획되었다.
 
+## API
+
+### 지도: Map
+
+| 속성          | 타입              |
+|-------------|-----------------|
+| id          | int             |
+| description | str             |
+| area_layers | list[AreaLayer] |
+
+#### 영역 레이어: AreaLayer
+
+| 속성          | 타입                  |
+|-------------|---------------------|
+| id          | int                 |
+| description | str                 |
+| metadata    | dict[int, AreaData] |
+| tree        | QuadTree            |
+
+##### AreaData
+
+`AreaData`는 영역 레이어에 나타난 자료들에 대한 세부적인 정보를 제공한다.
+영역 레이어 `tree`의 각각 영역은 서로 구분되는 정수만을 가지고 있는데,
+`AreaData`가 해당 정수를 두고 무슨 의미를 가지는지 나타내는 역할을 하는 것이다.
+
+| 속성          | 타입    |
+|-------------|-------|
+| id          | int   |
+| description | str   |
+| color       | tuple |
+
 ## 기능적 구현
 
 ### QuadTree
