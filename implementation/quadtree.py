@@ -82,7 +82,18 @@ class QuadTree:
         return f'<QuadTree value={self.value}, children={self.children}>'
 
     def __copy__(self):
-        return QuadTree(self.value)
+        result = QuadTree(self.value)
+        result.parent = self.parent
+
+        if self.is_divided():
+            children = list()
+            for child in self.children:
+                clone = copy(child)
+                clone.parent = result
+                children.append(clone)
+            result.children = tuple(children)
+
+        return result
 
     def __str__(self):
         return self.print_tree()
@@ -179,6 +190,11 @@ class QuadTree:
         tree.set_value(value)
         tree.parent.simplify_upward()
         return tree
+
+    def path_int_set(self, x_path: int, y_path: int, unit: int, value):
+        x_pos = path_int_to_pos(x_path, unit)
+        y_pos = path_int_to_pos(y_path, unit)
+        return self.set(x_pos, y_pos, unit, value)
 
     def simplify_upward(self):
         """
@@ -292,19 +308,53 @@ class QuadTree:
             data = load(file)
         return QuadTree.loads(data)
 
+    def apply(self, delta: 'QuadTree') -> 'QuadTree':
+        """
+        사분트리에 사분트리 차이를 적용한 결과를 출력한다.
+
+        ``self``의 내용을 바꾸지 않고 복사본을 만들어 출력한다.
+        """
+        result = copy(self)
+        if delta.value is not None:
+            result.value = delta.value
+            result.children = tuple()
+
+        if not delta.is_divided():
+            return result
+
+        if not result.is_divided():
+            result.divide()
+
+        children = list()
+        for i in range(4):
+            children.append(result.children[i].apply(delta.children[i]))
+        result.children = tuple(children)
+        return result
+
 
 def _main():
     qt = QuadTree(0)
-    # sub = qt.get(0, 1, 3)
-    # sub.set_value(1)
-    # sub.simplify_upward()
-    unit = 11
 
-    qt.set(16, 1022, unit, 1)
-    qt.set(1040, 1022, unit, 1)
-    qt.set(16, 2046, unit, 1)
-    qt.set(1040, 2046, unit, 1)
+    qt.path_int_set(0, 0, 1, 0)
+    qt.path_int_set(1, 0, 1, 1)
+    qt.path_int_set(0, 1, 1, 2)
+    qt.path_int_set(1, 1, 1, 3)
+
+    qt.path_int_set(0, 0, 2, 4)
+    qt.path_int_set(1, 0, 2, 5)
+    qt.path_int_set(0, 1, 2, 6)
+    qt.path_int_set(1, 1, 2, 7)
+
     print(qt)
+
+    qtd = QuadTree(None)
+    qtd.path_int_set(2, 2, 2, 9)
+    print(qtd)
+
+    result = qt.apply(qtd)
+    print(result)
+
+    result.save()
 
 
 if __name__ == '__main__':
