@@ -1,4 +1,6 @@
-from flask import Flask, render_template
+from urllib.parse import parse_qs
+
+from flask import Flask, render_template, request
 
 from tasdia import Map
 
@@ -6,12 +8,32 @@ app = Flask(__name__)
 
 maps: dict[int, Map] = {map_.id: map_ for map_ in (
     Map.load('example/sat_map.json'),
+    Map.load('example/damegasique_map.json')
 )}
 
 
 @app.route('/')
-def index():
+def get_index():
     return render_template('index.html')
+
+
+@app.route('/map')
+def get_map():
+    data = parse_qs(request.query_string.decode())
+    map_id = data.get('map')
+
+    if isinstance(map_id, list):
+        try:
+            map_id = int(map_id[0])
+        except ValueError:
+            return '올바르지 않은 지도 ID 형태', 400
+    else:
+        return '지도 아이디 주어지지 않음', 400
+
+    if map_id not in maps:
+        return '지도 아이디에 해당하는 지도 없음', 404
+
+    return render_template('map.html', map_id=map_id)
 
 
 @app.route('/api/map')

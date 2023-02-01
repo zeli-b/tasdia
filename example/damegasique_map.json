@@ -1,0 +1,21 @@
+{
+ "id": 1,
+ "description": "다메가시크",
+ "area_layers": [
+  {
+   "id": 0,
+   "description": "월면",
+   "metadata": {
+    "0": {
+     "id": 0,
+     "description": "월면",
+     "color": "#b9b8b8"
+    }
+   },
+   "tree": [
+    0
+   ],
+   "deltas": []
+  }
+ ]
+}

@@ -6,19 +6,10 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </head>
-<body onload="ready()">
+<body>
 
-<h1>불러올 지도 선택</h1>
-
-<form action="/map" method="GET">
-    <p>
-        <label for="map">지도</label>
-        <select name="map" id="map"></select>
-    </p>
-    <input type="submit">
-</form>
+This is map #{{ map_id }}.
 
 </body>
 </html>
