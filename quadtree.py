@@ -152,34 +152,29 @@ class QuadTree:
 
         return result
 
-    def get(self, x_pos: int, y_pos: int, unit: int = inf):
+    def get(self, x_pos: int, y_pos: int, unit: int):
         """
         트리 면 속 특정 좌표에 할당된 트리를 출력한다.
         """
-        x_path = pos_to_path(x_pos)
-        y_path = pos_to_path(y_pos)
+        x_path = pos_to_path(x_pos, unit)
+        y_path = pos_to_path(y_pos, unit)
 
         now = self
-        i = 0
         while x_path or y_path:
-            if i >= unit:
-                break
-
             x = x_path.pop(0) if x_path else 0
             y = y_path.pop(0) if y_path else 0
             index = y*2 + x
 
             if not now.children:
-                return now
+                now.divide()
 
             now = now.children[index]
-            i += 1
 
         return now
 
     def set(self, x_pos: int, y_pos: int, unit: int, value):
         tree = self.get(x_pos, y_pos, unit)
-        tree.combine(value)
+        tree.set_value(value)
         tree.parent.simplify_upward()
         return tree
 
@@ -193,7 +188,7 @@ class QuadTree:
             return
 
         value = self.children[0].value
-        for i in range(1, 3):
+        for i in range(1, 4):
             if self.children[i].value != value:
                 return
 
@@ -276,7 +271,16 @@ class QuadTree:
 
 
 def _main():
-    qt = QuadTree.load()
+    qt = QuadTree(0)
+    # sub = qt.get(0, 1, 3)
+    # sub.set_value(1)
+    # sub.simplify_upward()
+    unit = 11
+
+    qt.set(16, 1022, unit, 1)
+    qt.set(1040, 1022, unit, 1)
+    qt.set(16, 2046, unit, 1)
+    qt.set(1040, 2046, unit, 1)
     print(qt)
 
 
