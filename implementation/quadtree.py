@@ -102,6 +102,20 @@ class QuadTree:
         self.value = value
         return self
 
+    def is_identical_with(self, other: 'QuadTree') -> bool:
+        if self.value != other.value:
+            return False
+
+        if (divided := self.is_divided()) != other.is_divided():
+            return False
+
+        if divided:
+            for i in range(4):
+                if not self.children[i].is_identical_with(other.children[i]):
+                    return False
+
+        return True
+
     def divide(self):
         """
         ``self``에 ``self``와 같은 ``value``를 가진 자식 사분트리를 가지게 한다.
@@ -201,6 +215,8 @@ class QuadTree:
         ``self``부터 최상위 트리까지를 순회하며 child가 가지고 있는 값이 모두 같다면 combine한다.
 
         이 메소드가 실행될 때에는 ``self``를 제외하고 그 어떤 부분에서도 자식이 모두 같은 값을 가지고 있지만 divide되어있는 트리가 없음을 상정한다.
+
+        ``self``가 병합해야 하는 트리의 자식이라면 ``self.parent``에 이 함수를 적용해야 한다.
         """
         if not self.is_divided():
             return
@@ -329,6 +345,7 @@ class QuadTree:
         for i in range(4):
             children.append(result.children[i].apply(delta.children[i]))
         result.children = tuple(children)
+        result.simplify_upward()
         return result
 
     def trace(self, delta: 'QuadTree', *, clone: bool = False) -> 'QuadTree':
@@ -378,8 +395,13 @@ def _main():
     qtd.path_int_set(0, 0, 1, 2)
     print(qtd)
 
-    result = qt.trace(qtd)
+    delta = qt.trace(qtd)
+    print(delta)
+
+    result = qt.apply(delta)
     print(result)
+
+    assert qt.is_identical_with(result)
 
 
 if __name__ == '__main__':
