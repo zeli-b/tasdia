@@ -4,6 +4,12 @@ from util import convert_color, reveal_color
 
 
 class AreaData:
+    """
+    ``AreaData``는 영역 레이어에 나타난 자료들에 대한 세부적인 정보를 제공한다.
+    영역 레이어 ``tree``의 각각 영역은 서로 구분되는 정수만을 가지고 있는데,
+    ``AreaData``가 해당 정수를 두고 무슨 의미를 가지는지 나타내는 역할을 하는 것이다.
+    """
+
     @staticmethod
     def loads(data: dict) -> 'AreaData':
         id_ = data.get('id')
