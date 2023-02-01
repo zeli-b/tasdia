@@ -108,7 +108,7 @@ class QuadTree:
 
         반대 연산은 ``self.combine``
         """
-        self.children = tuple(copy(self) for _ in range(4))
+        self.children = tuple(QuadTree(self.value) for _ in range(4))
         for child in self.children:
             child.parent = self
         return self
@@ -331,30 +331,55 @@ class QuadTree:
         result.children = tuple(children)
         return result
 
+    def trace(self, delta: 'QuadTree', *, clone: bool = False) -> 'QuadTree':
+        """
+        사분트리에 사분트리 차이를 추적한 결과를 출력한다.
+        """
+
+        if not clone:
+            delta = copy(delta)
+
+        if delta.value is not None:
+            delta = copy(self)
+            return delta
+
+        if delta.is_divided():
+            if originally_combined := not self.is_divided():
+                self.divide()
+
+            children = list()
+            for i in range(4):
+                children.append(self.children[i].trace(delta.children[i], clone=True))
+            delta.children = tuple(children)
+
+            if originally_combined:
+                self.combine()
+
+        return delta
+
 
 def _main():
     qt = QuadTree(0)
 
-    qt.path_int_set(0, 0, 1, 0)
-    qt.path_int_set(1, 0, 1, 1)
-    qt.path_int_set(0, 1, 1, 2)
-    qt.path_int_set(1, 1, 1, 3)
+    qt.path_int_set(0, 0, 1, 1)
+    qt.path_int_set(1, 0, 1, 2)
+    qt.path_int_set(0, 1, 1, 3)
+    qt.path_int_set(1, 1, 1, 4)
 
-    qt.path_int_set(0, 0, 2, 4)
-    qt.path_int_set(1, 0, 2, 5)
-    qt.path_int_set(0, 1, 2, 6)
-    qt.path_int_set(1, 1, 2, 7)
+    qt.path_int_set(0, 0, 2, 5)
+    qt.path_int_set(1, 0, 2, 6)
+    qt.path_int_set(0, 1, 2, 7)
+    qt.path_int_set(1, 1, 2, 8)
 
     print(qt)
 
     qtd = QuadTree(None)
-    qtd.path_int_set(2, 2, 2, 9)
+    qtd.path_int_set(2, 3, 2, 1)
+    qtd.path_int_set(0, 0, 1, 2)
     print(qtd)
 
-    result = qt.apply(qtd)
+    result = qt.trace(qtd)
     print(result)
-
-    result.save()
 
 
 if __name__ == '__main__':
