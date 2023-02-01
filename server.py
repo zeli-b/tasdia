@@ -33,7 +33,7 @@ def get_map():
     if map_id not in maps:
         return '지도 아이디에 해당하는 지도 없음', 404
 
-    return render_template('map.html', map_id=map_id)
+    return render_template('map.html', map=maps[map_id])
 
 
 @app.route('/api/map')
