@@ -1,4 +1,4 @@
-from quadtree import QuadTree
+from implementation.quadtree import QuadTree
 from tasdia.layer import Layer
 from util import convert_color, reveal_color
 

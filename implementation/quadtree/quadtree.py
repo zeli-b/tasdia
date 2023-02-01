@@ -1,6 +1,5 @@
 from copy import copy
 from json import dump, load
-from math import log2
 from typing import Iterator, Optional
 
 from PIL import Image

@@ -2,7 +2,7 @@ from math import log2
 
 from PIL import Image
 
-import quadtree
+from implementation import quadtree
 
 
 def image_to_quadtree(input_filename: str, output_filename: str):
