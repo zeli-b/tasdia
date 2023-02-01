@@ -258,17 +258,16 @@ class QuadTree:
         path = self.get_family_path(tree)
         return get_position_by_family_path(path)
 
-    def saves(self) -> tuple:
+    def saves(self) -> list:
         """
         트리를 JSON 형식으로 반환합니다.
         """
-        if not self.is_divided():
-            return self.value,
-
         result = [self.value]
+        if not self.is_divided():
+            return result
+
         for child in self.children:
             result.append(child.saves())
-        result = tuple(result)
         return result
 
     def save(self, filename='out/output.json'):

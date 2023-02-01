@@ -9,6 +9,11 @@ class Map:
         self.description = description
         self.area_layers = area_layers
 
+    def get_area_layer(self, id_: int):
+        for layer in self.area_layers:
+            if id_ == layer.id:
+                return layer
+
     def jsonify(self, *, full: bool = False):
         area_layers = list(map(lambda x: x.jsonify(full=full), self.area_layers))
         return {
