@@ -16,6 +16,26 @@
     0
    ],
    "deltas": []
+  },
+  {
+   "id": 1,
+   "description": "영토",
+   "metadata": {
+    "0": {
+     "id": 0,
+     "description": "무주지",
+     "color": "#b9b8b8"
+    },
+    "1": {
+     "id": 1,
+     "description": "칼라만다리 연방",
+     "color": "#00ff00"
+    }
+   },
+   "tree": [
+    1
+   ],
+   "deltas": []
   }
  ]
 }

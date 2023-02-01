@@ -4,6 +4,32 @@
     <title>#{{ map.id }}: {{ map.description }} - Tasdia</title>
 {% endblock %}
 
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script>
+        const MAP_ID = {{ map.id }};
+    </script>
+{% endblock %}
+
 {% block body %}
-    This is map #{{ map.id }}.
+
+<div class="main-frame">
+    <article class="main-container">
+        <div class="tools-frame">
+            <ul>
+                <li>1</li>
+            </ul>
+        </div>
+        <div class="canvas-frame">
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="options-frame">
+            <h4>영역 레이어</h4>
+            <ul class="area-layers-list">
+            </ul>
+        </div>
+    </article>
+</div>
+
 {% endblock %}

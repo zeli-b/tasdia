@@ -8,7 +8,7 @@ function ready() {
         let option = document.createElement("option");
 
         option.value = map.id;
-        option.innerText = `${map.id}: ${map.description}`
+        option.innerText = `${map.id}: ${map.description}`;
 
         mapSelect.appendChild(option);
       });
