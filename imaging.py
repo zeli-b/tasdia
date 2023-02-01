@@ -20,7 +20,7 @@ def image_to_quadtree(input_filename: str, output_filename: str):
         for j in range(width):
             x = quadtree.path_int_to_pos(j, unit)
 
-            color = pixels[j][i][0]
+            color = pixels[i][j][0]
             color = 1 - round(color / 255)
             if color:
                 qt.set(x, y, unit, color)
@@ -29,9 +29,13 @@ def image_to_quadtree(input_filename: str, output_filename: str):
     print(qt)
 
 
-def quadtree_to_image(input_filename: str, output_filename: str):
+def quadtree_to_image(input_filename: str, output_filename: str, size):
     qt = quadtree.QuadTree.load(input_filename)
+    print(qt)
+
+    qt.save_image(output_filename, size, palette={1: (0, 0, 0), 0: (255, 255, 255)})
 
 
 if __name__ == '__main__':
     image_to_quadtree('out/sat.png', 'out/sat.json')
+    quadtree_to_image('out/sat.json', 'out/sat_visualize.png', 2048)

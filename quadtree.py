@@ -1,7 +1,10 @@
 from copy import copy
-from math import inf
 from json import dump, load
-from typing import Iterator
+from math import log2
+from typing import Iterator, Optional
+
+from PIL import Image
+from PIL.ImageDraw import Draw
 
 
 def path_to_pos(path: list[int]) -> int:
@@ -243,6 +246,27 @@ class QuadTree:
         """
         with open(filename, 'w', encoding='utf-8') as file:
             dump(self.saves(), file)
+
+    def save_image(self, filename: str, size: int, *, palette: Optional[dict] = None):
+        image = Image.new('RGB', (size, size))
+        draw = Draw(image)
+        image = self.draw_image(image, draw, 0, 0, palette)
+
+        image.save(filename)
+
+    def draw_image(self, image: Image, draw: Draw, x: int, y: int, palette: Optional[dict] = None, depth: int = 0):
+        dimension = image.width // 2 ** depth
+        if not self.is_divided():
+            color = self.value if palette is None else palette.get(self.value, (0, 255, 0))
+            print(x, y, dimension, color)
+            draw.rectangle(((x, y), (x+dimension, y+dimension)), color, (0, 255, 0))
+            return image
+
+        dimension //= 2
+        for i, child in enumerate(self.children):
+            iy, ix = divmod(i, 2)
+            child.draw_image(image, draw, x + ix * dimension, y + iy * dimension, palette, depth + 1)
+        return image
 
     @staticmethod
     def loads(data: tuple):
