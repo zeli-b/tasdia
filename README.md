@@ -9,20 +9,21 @@ Tasdia는 인공 세계관 [사트](http://www.shtelo.org/)의
 
 ### 지도: Map
 
-| 속성          | 타입              |
-|-------------|-----------------|
-| id          | int             |
-| description | str             |
-| area_layers | list[AreaLayer] |
+| 속성          | 타입                |
+|-------------|-------------------|
+| id          | `int`             |
+| description | `str`             |
+| area_layers | `list[AreaLayer]` |
 
 #### 영역 레이어: AreaLayer
 
-| 속성          | 타입                  |
-|-------------|---------------------|
-| id          | int                 |
-| description | str                 |
-| metadata    | dict[int, AreaData] |
-| tree        | QuadTree            |
+| 속성          | 타입                    |
+|-------------|-----------------------|
+| id          | `int`                 |
+| description | `str`                 |
+| metadata    | `dict[int, AreaData]` |
+| tree        | `QuadTree`            |
+| deltas      | `list[AreaDelta]`     |
 
 ##### AreaData
 
@@ -30,11 +31,18 @@ Tasdia는 인공 세계관 [사트](http://www.shtelo.org/)의
 영역 레이어 `tree`의 각각 영역은 서로 구분되는 정수만을 가지고 있는데,
 `AreaData`가 해당 정수를 두고 무슨 의미를 가지는지 나타내는 역할을 하는 것이다.
 
-| 속성          | 타입    |
-|-------------|-------|
-| id          | int   |
-| description | str   |
-| color       | tuple |
+| 속성          | 타입      |
+|-------------|---------|
+| id          | `int`   |
+| description | `str`   |
+| color       | `tuple` |
+
+##### AreaDelta
+
+| 속성    | 타입              |
+|-------|-----------------|
+| time  | `float`         |
+| delta | `QuadTreeDelta` |
 
 ## 기능적 구현
 

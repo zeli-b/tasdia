@@ -19,7 +19,7 @@ class Map:
 
     def save(self, filename: str):
         with open(filename, 'w', encoding='utf-8') as file:
-            dump(self.jsonify(full=True), file, indent=2, ensure_ascii=False)
+            dump(self.jsonify(full=True), file, indent=1, ensure_ascii=False)
 
     @staticmethod
     def load(filename: str) -> 'Map':

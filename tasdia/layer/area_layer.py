@@ -30,6 +30,26 @@ class AreaData:
         }
 
 
+class AreaDelta:
+    @staticmethod
+    def loads(data: dict) -> 'AreaDelta':
+        time = data.get('time')
+        delta = QuadTree.loads(data.get('delta'))
+        return AreaDelta(time, delta)
+
+    def __init__(self, time: float, delta: QuadTree):
+        self.time = time
+        self.delta = delta
+
+    def jsonify(self):
+        delta = self.delta.saves()
+
+        return {
+            'time': self.time,
+            'delta': delta
+        }
+
+
 class AreaLayer(Layer):
     @staticmethod
     def loads(data: dict) -> 'AreaLayer':
@@ -37,13 +57,16 @@ class AreaLayer(Layer):
         description = data.get('description')
         metadata = dict(map(lambda x: (x[0], AreaData.loads(x[1])), data.get('metadata').items()))
         tree = QuadTree.loads(data.get('tree'))
-        return AreaLayer(id_, description, metadata, tree)
+        deltas = list(map(AreaDelta.loads, data.get('deltas')))
+        return AreaLayer(id_, description, metadata, tree, deltas)
 
-    def __init__(self, id_: int, description: str, metadata: dict[int, AreaData], tree: QuadTree):
+    def __init__(self, id_: int, description: str, metadata: dict[int, AreaData],
+                 tree: QuadTree, deltas: list[AreaDelta]):
         self.id = id_
         self.description = description
         self.metadata = metadata
         self.tree = tree
+        self.deltas = deltas
 
     def jsonify(self, *, full: bool = False) -> dict:
         metadata = dict(map(lambda x: (x[0], x[1].jsonify()), self.metadata.items()))
@@ -55,5 +78,6 @@ class AreaLayer(Layer):
 
         if full:
             result['tree'] = self.tree.saves()
+            result['deltas'] = list(map(AreaDelta.jsonify, self.deltas))
 
         return result
