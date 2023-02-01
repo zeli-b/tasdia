@@ -1,5 +1,6 @@
 from copy import copy
 from math import inf
+from json import dump, load
 from typing import Iterator
 
 
@@ -228,30 +229,54 @@ class QuadTree:
         path = self.get_family_path(tree)
         return get_position_by_family_path(path)
 
+    def saves(self) -> tuple:
+        """
+        트리를 JSON 형식으로 반환합니다.
+        """
+        if not self.is_divided():
+            return self.value,
+
+        result = [self.value]
+        for child in self.children:
+            result.append(child.saves())
+        result = tuple(result)
+        return result
+
+    def save(self, filename='out/output.json'):
+        """
+        트리를 파일로 저장합니다.
+        """
+        with open(filename, 'w', encoding='utf-8') as file:
+            dump(self.saves(), file)
+
+    @staticmethod
+    def loads(data: tuple):
+        """
+        JSON 형식의 트리를 ``QuadTree``로 변환하여 반환합니다.
+        """
+        result = QuadTree(data[0])
+        if len(data) <= 1:
+            return result
+
+        children = list()
+        for i in range(1, 5):
+            children.append(QuadTree.loads(data[i]))
+        result.children = tuple(children)
+
+        return result
+
+    @staticmethod
+    def load(filename='out/input.json'):
+        """
+        파일에 저장되어있는 트리를 반환합니다.
+        """
+        with open(filename, 'r', encoding='utf-8') as file:
+            data = load(file)
+        return QuadTree.loads(data)
+
 
 def _main():
-    qt = QuadTree(0)
-    print(qt.get_depth())
-
-    qt.divide()
-    qt.children[0].set_value(1)
-    qt.children[1].set_value(2)
-    qt.children[2].set_value(3)
-    qt.children[3].set_value(4)
-
-    qt.children[0].divide()
-    print(qt.get_depth())
-    print(qt)
-
-    qt.children[0].children[1].set_value(5)
-
-    print(qt.get_depth())
-    print(qt)
-
-    qt.set(2, 0, 2, 9)
-    print(qt)
-
-    qt.set(2, 0, 2, 1)
+    qt = QuadTree.load()
     print(qt)
 
 
