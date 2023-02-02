@@ -23,8 +23,8 @@ class AreaLayer {
 
     if (this.surface === null) {
       this.surface = document.createElement('canvas');
-      this.surface.width = 2048;
-      this.surface.height = 2048;
+      this.surface.width = 4096;
+      this.surface.height = 4096;
       let surfaceContext = this.surface.getContext('2d');
 
       let palette = {};
@@ -44,16 +44,19 @@ class AreaLayer {
   }
 }
 
-function mod(x, y) {
-  x -= Math.floor(x / y) * y;
-  return x;
+function mod(a, b) {
+  a -= Math.floor(a / b) * b;
+  return a;
 }
+
+const WORLD_WIDTH = 360;
+const WORLD_HEIGHT = 180;
 
 class Camera {
   constructor() {
-    this.x = 1920;
+    this.x = WORLD_WIDTH / 2;
     this.y = 0;
-    this.zoom = 1;
+    this.zoom = canvas.width / WORLD_WIDTH;
   }
 
   getScreenX(x) {
@@ -86,12 +89,12 @@ class Camera {
     this.x += event.deltaX / this.zoom / 2;
     this.y += event.deltaY / this.zoom / 2;
 
-    this.x = mod(this.x, 3840)
-    this.y = Math.min(Math.max(this.y, -1080), 1080)
+    this.x = mod(this.x, WORLD_WIDTH)
+    this.y = Math.min(Math.max(this.y, -WORLD_HEIGHT / 2), WORLD_HEIGHT / 2)
   }
 }
 
-let camera = new Camera();
+let camera;
 
 let canvas, context;
 let areaLayersList;
@@ -106,6 +109,7 @@ function ready() {
   areaLayersList = document.querySelector('.area-layers-list');
 
   resize();
+  camera = new Camera();
 
   infoLatitude = document.querySelector('#info-latitude');
   infoLongitude = document.querySelector('#info-longitude');
@@ -159,25 +163,24 @@ function lerp(t, a, b, c, d) {
  * 마우스의 위치에 따라 위도·경도 정보를 표시한다.
  */
 function tickGPSInfo() {
-  let x = mod(camera.getCameraX(mouseX), 3840);
+  let x = camera.getCameraX(mouseX);
   let y = camera.getCameraY(mouseY);
-
-  let side, degree, minutes, seconds;
-  if (Math.abs(y) > 1080) {
+  if (mouseX < 0 || mouseX > canvas.width || Math.abs(y) > WORLD_HEIGHT / 2) {
     infoLatitude.innerText = '-';
     infoLongitude.innerText = '-';
     return;
   }
 
+  let side, degree, minutes, seconds;
   side = y <= 0 ? '북위' : '남위';
-  degree = lerp(Math.abs(y), 0, 1080, 90, 0);
+  degree = lerp(Math.abs(y), 0, WORLD_HEIGHT / 2, 90, 0);
   [degree, minutes] = [Math.floor(degree), degree % 1 * 60];
   [minutes, seconds] = [Math.floor(minutes), Math.floor(minutes % 1 * 600) / 10];
   infoLatitude.innerText = `${side} ${degree}° ${minutes}′ ${seconds}″`;
 
-  x = mod(x + 1920, 3840) - 1920;
+  x = mod(x + WORLD_WIDTH / 2, WORLD_WIDTH) - WORLD_WIDTH / 2;
   side = x >= 0 ? '동경' : '서경';
-  degree = lerp(Math.abs(x), 0, 1920, 180, 0);
+  degree = lerp(Math.abs(x), 0, WORLD_WIDTH / 2, 180, 0);
   [degree, minutes] = [Math.floor(degree), degree % 1 * 60];
   [minutes, seconds] = [Math.floor(minutes), Math.floor(minutes % 1 * 600) / 10];
   infoLongitude.innerText = `${side} ${degree}° ${minutes}′ ${seconds}″`;
@@ -198,13 +201,13 @@ function renderBackground() {
 }
 
 function renderAreas() {
-  let x = Math.floor(camera.getCameraX(0) / 3840);
-  let endX = camera.getCameraX(canvas.width) / 3840;
+  let x = Math.floor(camera.getCameraX(0) / WORLD_WIDTH);
+  let endX = camera.getCameraX(canvas.width) / WORLD_WIDTH;
   for (let i = x; i <= endX; i++) {
     areas.forEach(area => {
       area.render(
-        camera.getScreenX(3840 * i), camera.getScreenY(-1080),
-        camera.getScreenLength(3840), camera.getScreenLength(2160)
+        camera.getScreenX(WORLD_WIDTH * i), camera.getScreenY(-WORLD_HEIGHT / 2),
+        camera.getScreenLength(WORLD_WIDTH), camera.getScreenLength(WORLD_HEIGHT)
       );
     });
   }
