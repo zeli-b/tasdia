@@ -189,12 +189,12 @@ class QuadTree {
         let child = this.children[i];
         let position = child.getFamilyPath(tree);
         if (position) {
-          let [y, x] = [i / 2, i % 2];
+          let [y, x] = [Math.floor(i / 2), i % 2];
           return [[x, y]].concat(position);
         }
       }
     } else {
-      let [y, x] = [index / 2, index % 2];
+      let [y, x] = [Math.floor(index / 2), index % 2];
       return [[x, y]];
     }
   }
@@ -296,5 +296,24 @@ class QuadTree {
     }
 
     return delta;
+  }
+
+  render(context, x, y, width, height, palette) {
+    if (!this.isDivided()) {
+      context.fillStyle = palette[this.value];
+      context.fillRect(x, y, width, height);
+      return;
+    }
+
+    width /= 2;
+    height /= 2;
+    for (let i = 0; i < 4; i++) {
+      let [yi, xi] = [Math.floor(i / 2), i % 2];
+      this.children[i].render(
+        context,
+        x + width * xi, y + height * yi,
+        width, height,
+        palette);
+    }
   }
 }

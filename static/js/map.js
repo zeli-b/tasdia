@@ -1,8 +1,33 @@
+class AreaLayer {
+  constructor(id, description, metadata) {
+    this.id = id;
+    this.description = description;
+    this.metadata = metadata;
+    this.tree = null;
+    this.deltas = [];
+  }
+
+  static loads(data) {
+    let id = data.id
+      , description = data.description
+      , metadata = data.metadata;
+    return new AreaLayer(id, description, metadata);
+  }
+
+  render(x, y, width, height) {
+    let palette = {};
+    Object.values(this.metadata).forEach(metadatum => {
+      palette[metadatum.id] = metadatum.color;
+    });
+    this.tree.render(context, x, y, width, height, palette);
+  }
+}
+
 let canvas;
 let context;
 let areaLayersList;
 
-let areas = {};
+let areas = [];
 
 function ready() {
   canvas = document.querySelector('#canvas');
@@ -38,12 +63,13 @@ function ready() {
         radio.checked = i === 0;
         li.appendChild(radio);
 
-        let areaId = datum.id;
+        let areaLayer = AreaLayer.loads(datum);
         fetch(`/api/map/${MAP_ID}/area/${datum.id}/tree`)
           .then(r => r.json())
           .then(areaData => {
-            areas[areaId] = QuadTree.loads(areaData);
+            areaLayer.tree = QuadTree.loads(areaData);
           });
+        areas.push(areaLayer);
 
         areaLayersList.appendChild(li);
       }
@@ -56,10 +82,17 @@ function ready() {
 function tick() {
 }
 
+function renderAreas() {
+  areas.forEach(area => {
+    area.render(0, 0, 384, 216);
+  })
+}
+
 /*
  * 화면 출력
  */
 function render() {
+  renderAreas();
 }
 
 let fps = 60;
