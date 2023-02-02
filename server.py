@@ -94,4 +94,4 @@ def get_api_map_id_area_id_tree(map_id: int, area_id: int):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
