@@ -5,7 +5,9 @@ class AreaLayer {
     this.metadata = metadata;
     this.tree = null;
     this.deltas = [];
+
     this.surface = null;
+    this.visible = true;
   }
 
   static loads(data) {
@@ -17,6 +19,7 @@ class AreaLayer {
 
   render(x, y, width, height) {
     if (this.tree === null) return;
+    if (!this.visible) return;
 
     if (this.surface === null) {
       this.surface = document.createElement('canvas');
@@ -33,6 +36,11 @@ class AreaLayer {
 
     context.imageSmoothingEnabled = false;
     context.drawImage(this.surface, x, y, width, height);
+  }
+
+  toggleVisible() {
+    this.visible = !this.visible;
+    console.log(this);
   }
 }
 
@@ -108,6 +116,7 @@ function ready() {
       let datum;
       for (let i = 0; i < data.length; i++) {
         datum = data[i];
+        let areaLayer = AreaLayer.loads(datum);
 
         li = document.createElement("li");
         li.innerHTML = datum.description + '<br>';
@@ -116,6 +125,7 @@ function ready() {
         check = document.createElement('input');
         check.type = 'checkbox';
         check.checked = true;
+        check.onchange = () => areaLayer.toggleVisible();
         li.appendChild(check);
 
         // 작업중 여부를 나타내는 라디오버튼
@@ -125,7 +135,6 @@ function ready() {
         radio.checked = i === 0;
         li.appendChild(radio);
 
-        let areaLayer = AreaLayer.loads(datum);
         fetch(`/api/map/${MAP_ID}/area/${datum.id}/tree`)
           .then(r => r.json())
           .then(areaData => {
