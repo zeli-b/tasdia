@@ -69,17 +69,17 @@ class Camera {
   }
 
   getCameraX(x) {
-    return (x - canvas.width / 2) / this.zoom - x;
+    return (x - canvas.width / 2) / this.zoom + this.x;
   }
 
   getCameraY(y) {
-    return (y - canvas.height / 2) / this.zoom - y;
+    return (y - canvas.height / 2) / this.zoom + this.y;
   }
 
   scroll(event) {
     if (event.altKey) {
       this.zoom *= Math.exp(-event.deltaY / 500);
-      this.zoom = Math.min(Math.max(this.zoom, 0.1), 200);
+      this.zoom = Math.min(Math.max(this.zoom, 0.1), 1000);
       return;
     }
 
@@ -159,9 +159,16 @@ function renderBackground() {
 }
 
 function renderAreas() {
-  areas.forEach(area => {
-    area.render(camera.getScreenX(0), camera.getScreenY(-1080), camera.getScreenLength(3840), camera.getScreenLength(2160));
-  });
+  let x = Math.floor(camera.getCameraX(0) / 3840);
+  let endX = camera.getCameraX(canvas.width) / 3840;
+  for (let i = x; i <= endX; i++) {
+    areas.forEach(area => {
+      area.render(
+        camera.getScreenX(3840 * i), camera.getScreenY(-1080),
+        camera.getScreenLength(3840), camera.getScreenLength(2160)
+      );
+    });
+  }
 }
 
 /*
