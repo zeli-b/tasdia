@@ -6,6 +6,11 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/map.css') }}">
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
     <script src="{{ url_for('static', filename='js/quadtree.js') }}"></script>
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>
     <script>
