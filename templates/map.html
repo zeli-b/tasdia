@@ -11,6 +11,7 @@
             overflow: hidden;
         }
     </style>
+    <script src="{{ url_for('static', filename='js/mouse.js') }}"></script>
     <script src="{{ url_for('static', filename='js/quadtree.js') }}"></script>
     <script src="{{ url_for('static', filename='js/map.js') }}"></script>
     <script>
@@ -34,6 +35,11 @@
             <h4>영역 레이어</h4>
             <ul class="area-layers-list">
             </ul>
+            <h3>정보</h3>
+            <table>
+                <tr><td>위도</td><td id="info-latitude">북위 0° 0′ 0.0″</td></tr>
+                <tr><td>경도</td><td id="info-longitude">동경 0° 0′ 0.0″</tdd></tr>
+            </table>
         </div>
     </article>
 </div>

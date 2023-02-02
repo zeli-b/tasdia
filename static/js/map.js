@@ -93,9 +93,10 @@ class Camera {
 
 let camera = new Camera();
 
-let canvas;
-let context;
+let canvas, context;
 let areaLayersList;
+let infoLatitude
+  , infoLongitude;
 
 let areas = [];
 
@@ -105,6 +106,9 @@ function ready() {
   areaLayersList = document.querySelector('.area-layers-list');
 
   resize();
+
+  infoLatitude = document.querySelector('#info-latitude');
+  infoLongitude = document.querySelector('#info-longitude');
 
   fetch(`/api/map/${MAP_ID}/area`)
     .then(r => r.json())
@@ -147,10 +151,45 @@ function ready() {
     });
 }
 
+function lerp(t, a, b, c, d) {
+  return (b - t) / (b - a) * (d - c) + c;
+}
+
+/*
+ * 마우스의 위치에 따라 위도·경도 정보를 표시한다.
+ */
+function tickGPSInfo() {
+  let x = mod(camera.getCameraX(mouseX), 3840);
+  let y = camera.getCameraY(mouseY);
+
+  let side, degree, minutes, seconds;
+  if (Math.abs(y) > 1080) {
+    infoLatitude.innerText = '-';
+    infoLongitude.innerText = '-';
+    return;
+  }
+
+  side = y <= 0 ? '북위' : '남위';
+  degree = lerp(Math.abs(y), 0, 1080, 90, 0);
+  [degree, minutes] = [Math.floor(degree), degree % 1 * 60];
+  [minutes, seconds] = [Math.floor(minutes), Math.floor(minutes % 1 * 600) / 10];
+  infoLatitude.innerText = `${side} ${degree}° ${minutes}′ ${seconds}″`;
+
+  x = mod(x + 1920, 3840) - 1920;
+  side = x >= 0 ? '동경' : '서경';
+  degree = lerp(Math.abs(x), 0, 1920, 180, 0);
+  [degree, minutes] = [Math.floor(degree), degree % 1 * 60];
+  [minutes, seconds] = [Math.floor(minutes), Math.floor(minutes % 1 * 600) / 10];
+  infoLongitude.innerText = `${side} ${degree}° ${minutes}′ ${seconds}″`;
+}
+
 /*
  * 화면 계산
  */
 function tick() {
+  if (canvas === undefined) return;
+
+  tickGPSInfo();
 }
 
 function renderBackground() {
@@ -175,6 +214,8 @@ function renderAreas() {
  * 화면 출력
  */
 function render() {
+  if (context === undefined) return;
+
   renderBackground();
   renderAreas();
 }
