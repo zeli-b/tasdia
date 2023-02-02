@@ -300,6 +300,9 @@ class QuadTree {
 
   render(context, x, y, width, height, palette) {
     if (!this.isDivided()) {
+      if (this.value === null)
+        return;
+
       context.fillStyle = palette[this.value];
       context.fillRect(x, y, width, height);
       return;

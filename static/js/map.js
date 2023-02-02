@@ -5,6 +5,7 @@ class AreaLayer {
     this.metadata = metadata;
     this.tree = null;
     this.deltas = [];
+    this.surface = null;
   }
 
   static loads(data) {
@@ -15,11 +16,22 @@ class AreaLayer {
   }
 
   render(x, y, width, height) {
-    let palette = {};
-    Object.values(this.metadata).forEach(metadatum => {
-      palette[metadatum.id] = metadatum.color;
-    });
-    this.tree.render(context, x, y, width, height, palette);
+    if (this.tree === null) return;
+
+    if (this.surface === null) {
+      this.surface = document.createElement('canvas');
+      this.surface.width = 3840;
+      this.surface.height = 2160;
+      let surfaceContext = this.surface.getContext('2d');
+
+      let palette = {};
+      Object.values(this.metadata).forEach(metadatum => {
+        palette[metadatum.id] = metadatum.color;
+      });
+      this.tree.render(surfaceContext, x, y, this.surface.width, this.surface.height, palette);
+    }
+
+    context.drawImage(this.surface, x, y, width, height);
   }
 }
 
