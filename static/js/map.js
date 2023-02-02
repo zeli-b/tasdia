@@ -2,7 +2,7 @@ let canvas;
 let context;
 let areaLayersList;
 
-let map;
+let areas = {};
 
 function ready() {
   canvas = document.querySelector('#canvas');
@@ -37,6 +37,13 @@ function ready() {
         radio.name = 'arealayer';
         radio.checked = i === 0;
         li.appendChild(radio);
+
+        let areaId = datum.id;
+        fetch(`/api/map/${MAP_ID}/area/${datum.id}/tree`)
+          .then(r => r.json())
+          .then(areaData => {
+            areas[areaId] = QuadTree.loads(areaData);
+          });
 
         areaLayersList.appendChild(li);
       }
@@ -74,4 +81,5 @@ function resize() {
   context.fillStyle = '#2c2c2c';
   context.fillRect(0, 0, canvas.width, canvas.height);
 }
+
 window.addEventListener('resize', resize);
