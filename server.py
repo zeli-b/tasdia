@@ -5,6 +5,7 @@ from flask import Flask, render_template, request
 from implementation.quadtree import QuadTree
 from tasdia import Map
 from tasdia.layer import AreaData, AreaLayer
+from tasdia.layer.area_layer import AreaDelta
 from util import reveal_color
 
 app = Flask(__name__)
@@ -101,6 +102,38 @@ def get_api_map_id_area_id(map_id: int, area_id: int):
         return '영역 아이디에 해당하는 영역 없음', 404
 
     return layer.jsonify(), 200
+
+
+@app.route('/api/map/<int:map_id>/area/<int:area_id>/new', methods=['POST'])
+def post_api_map_id_area_id_new(map_id: int, area_id: int):
+    map_ = maps.get(map_id)
+    if map_ is None:
+        return '지도 아이디에 해당하는 지도 없음', 404
+
+    area = map_.get_area_layer(area_id)
+    if area is None:
+        return '영역 아이디에 해당하는 지도 없음', 404
+
+    data = parse_data(request)
+
+    time = data.get('time')
+    if time is None:
+        return '시점 지정되지 않음', 400
+    try:
+        time = float(time)
+    except ValueError:
+        return '올바르지 않은 시점 형태', 400
+
+    delta = data.get('delta')
+    if delta is None:
+        return '변경사항 지정되지 않음', 400
+    delta = QuadTree.loads(delta)
+
+    area_delta = AreaDelta(time, delta)
+    area.add_delta(area_delta)
+    map_.save()
+
+    return 'OK', 200
 
 
 @app.route('/api/map/<int:map_id>/area/<int:area_id>/data')

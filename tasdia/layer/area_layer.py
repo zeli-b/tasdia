@@ -94,3 +94,30 @@ class AreaLayer(Layer):
 
         self.metadata[area_data.id] = area_data
         return self
+
+    def add_delta(self, delta: AreaDelta) -> 'AreaLayer':
+        """
+        self.deltas가 시간 순서대로 정렬되어있을 수 있도록 순서에 맞게 구간을 찾아 insert한다.
+        self.deltas는 시간에 대해 오름차순으로 정렬되어있다.
+        """
+        start, end = 0, len(self.deltas)
+
+        while end - start > 1:
+            anchor = (start + end) // 2
+            listed_delta = self.deltas[anchor]
+
+            if delta.time > listed_delta.time:
+                start = anchor
+            else:
+                end = anchor
+
+        if end - start == 1:
+            if delta.time < self.deltas[start].time:
+                i = start
+            else:
+                i = end
+        else:
+            i = start
+
+        self.deltas.insert(i, delta)
+        return self

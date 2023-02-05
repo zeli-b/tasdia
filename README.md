@@ -17,7 +17,7 @@ Tasdia는 인공 세계관 [사트](http://www.shtelo.org/)의
 
 ##### GET `/api/map`
 
-##### GET `/api/map/{map.id}`
+##### GET `/api/map/{id}`
 
 #### 영역 레이어: AreaLayer
 
@@ -35,11 +35,18 @@ Tasdia는 인공 세계관 [사트](http://www.shtelo.org/)의
 
 * 필요: `description`
 
-##### GET `/api/map/{map.id}/area/{id}`
+##### GET `/api/map/{id}/area/{id}`
 
-##### GET `/api/map/{map.id}/area/{id}/data`
+##### POST `/api/map/{id}/area/{id}/new`
 
-##### POST `/api/map/{map.id}/area/{id}/data/new`
+지도에 변경사항이 생겼을 때에 area에 변경사항을 등록한다.
+
+* 필요: `delta`
+* 필요: `time`
+
+##### GET `/api/map/{id}/area/{id}/data`
+
+##### POST `/api/map/{id}/area/{id}/data/new`
 
 * 필요: `color`, `#RRGGBB` 형태
 * 필요: `description`

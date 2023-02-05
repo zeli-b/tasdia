@@ -299,7 +299,7 @@ class QuadTree:
         return image
 
     @staticmethod
-    def loads(data: tuple):
+    def loads(data: list):
         """
         JSON 형식의 트리를 ``QuadTree``로 변환하여 반환합니다.
         """

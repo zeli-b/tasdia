@@ -11,7 +11,7 @@ class Map:
         self.area_layers = area_layers
         self.save_path = save_path
 
-    def get_area_layer(self, id_: int) -> AreaLayer:
+    def get_area_layer(self, id_: int) -> Optional[AreaLayer]:
         for layer in self.area_layers:
             if id_ == layer.id:
                 return layer
