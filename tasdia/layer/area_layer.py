@@ -81,3 +81,13 @@ class AreaLayer(Layer):
             result['deltas'] = list(map(AreaDelta.jsonify, self.deltas))
 
         return result
+
+    def get_new_data_id(self) -> int:
+        return max(map(lambda x: x.id, self.metadata.values())) + 1
+
+    def add_data(self, area_data: AreaData) -> 'AreaLayer':
+        if area_data.id in self.metadata:
+            raise ValueError('이미 존재하는 AreaData ID')
+
+        self.metadata[area_data.id] = area_data
+        return self

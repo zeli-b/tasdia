@@ -29,8 +29,10 @@ Tasdia는 인공 세계관 [사트](http://www.shtelo.org/)의
 | deltas      | `list[AreaDelta]`     |
 
 * GET `/api/map/{map.id}/area`
+* POST `/api/map/{map.id}/area/new`
 * GET `/api/map/{map.id}/area/{id}`
 * GET `/api/map/{map.id}/area/{id}/data`
+* POST `/api/map/{map.id}/area/{id}/data/new`
 * GET `/api/map/{map.id}/area/{id}/tree`
 
 ##### AreaData

@@ -1,8 +1,10 @@
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, parse_qsl
 
 from flask import Flask, render_template, request
 
+from implementation.quadtree import QuadTree
 from tasdia import Map
+from tasdia.layer import AreaData, AreaLayer
 
 app = Flask(__name__)
 
@@ -10,6 +12,17 @@ maps: dict[int, Map] = {map_.id: map_ for map_ in (
     Map.load('example/sat_map.json'),
     Map.load('example/damegasique_map.json')
 )}
+
+
+def parse_data(request_) -> dict:
+    if request_.content_type == 'application/json':
+        return request_.get_json()
+
+    data = request_.get_data(as_text=True)
+    if not data:
+        return dict()
+
+    return dict(parse_qsl(data, strict_parsing=True))
 
 
 @app.route('/')
@@ -57,6 +70,26 @@ def get_api_map_id_area(map_id: int):
     return [layer.jsonify() for layer in maps[map_id].area_layers], 200
 
 
+@app.route('/api/map/<int:map_id>/area/new', methods=['POST'])
+def post_api_map_id_area_new(map_id: int):
+    map_ = maps.get(map_id)
+    if map_ is None:
+        return '지도 아이디에 해당하는 지도 없음', 404
+
+    data = parse_data(request)
+
+    description = data.get('description')
+    if description is None:
+        return '설명 지정되지 않음', 400
+
+    id_ = map_.get_new_area_id()
+    area_layer = AreaLayer(id_, description, dict(), QuadTree(None), list())
+    map_.add_area(area_layer)
+    map_.save()
+
+    return area_layer.jsonify(), 200
+
+
 @app.route('/api/map/<int:map_id>/area/<int:area_id>')
 def get_api_map_id_area_id(map_id: int, area_id: int):
     if map_id not in maps:
@@ -79,6 +112,33 @@ def get_api_map_id_area_id_data(map_id: int, area_id: int):
         return '영역 아이디에 해당하는 영역 없음', 404
 
     return dict(map(lambda x: (x[0], x[1].jsonify()), layer.metadata.items()))
+
+
+@app.route('/api/map/<int:map_id>/area/<int:area_id>/data/new', methods=['POST'])
+def post_api_map_id_area_id_data_new(map_id: int, area_id: int):
+    map_ = maps.get(map_id)
+    if map_ is None:
+        return '지도 아이디에 해당하는 지도 없음', 404
+
+    area_layer = map_.get_area_layer(area_id)
+    if area_layer is None:
+        return '영역 레이어 아이디에 해당하는 레이어 없음', 404
+
+    data = parse_data(request)
+    color = data.get('color')
+    description = data.get('description')
+
+    if not color:
+        return '색 지정되지 않음', 400
+    if not description:
+        return '설명 지정되지 않음', 400
+
+    id_ = area_layer.get_new_data_id()
+    area_data = AreaData(id_, description, color)
+    area_layer.add_data(area_data)
+    map_.save()
+
+    return area_data.jsonify(), 200
 
 
 @app.route('/api/map/<int:map_id>/area/<int:area_id>/tree')
