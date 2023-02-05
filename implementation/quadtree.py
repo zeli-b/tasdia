@@ -222,8 +222,11 @@ class QuadTree:
             return
 
         value = self.children[0].value
+        divided = self.children[0].is_divided()
         for i in range(1, 4):
             if self.children[i].value != value:
+                return
+            if self.children[i].is_divided() != divided:
                 return
 
         self.combine(value)
@@ -323,13 +326,16 @@ class QuadTree:
             data = load(file)
         return QuadTree.loads(data)
 
-    def apply(self, delta: 'QuadTree') -> 'QuadTree':
+    def apply(self, delta: 'QuadTree', *, clone: bool = True) -> 'QuadTree':
         """
         사분트리에 사분트리 차이를 적용한 결과를 출력한다.
 
         ``self``의 내용을 바꾸지 않고 복사본을 만들어 출력한다.
         """
-        result = copy(self)
+        if clone:
+            result = copy(self)
+        else:
+            result = self
         if delta.value is not None:
             result.value = delta.value
             result.children = tuple()
@@ -342,7 +348,8 @@ class QuadTree:
 
         children = list()
         for i in range(4):
-            children.append(result.children[i].apply(delta.children[i]))
+            child = delta.children[i]
+            children.append(result.children[i].apply(child))
         result.children = tuple(children)
         result.simplify_upward()
         return result
@@ -375,32 +382,14 @@ class QuadTree:
 
 
 def _main():
-    qt = QuadTree(0)
+    qt = QuadTree(None)
 
-    qt.path_int_set(0, 0, 1, 1)
-    qt.path_int_set(1, 0, 1, 2)
-    qt.path_int_set(0, 1, 1, 3)
-    qt.path_int_set(1, 1, 1, 4)
+    delta = QuadTree(None)
+    delta.set(3, 2, 4, 0)
 
-    qt.path_int_set(0, 0, 2, 5)
-    qt.path_int_set(1, 0, 2, 6)
-    qt.path_int_set(0, 1, 2, 7)
-    qt.path_int_set(1, 1, 2, 8)
+    qt = qt.apply(delta)
 
     print(qt)
-
-    qtd = QuadTree(None)
-    qtd.path_int_set(2, 3, 2, 1)
-    qtd.path_int_set(0, 0, 1, 2)
-    print(qtd)
-
-    delta = qt.trace(qtd)
-    print(delta)
-
-    result = qt.apply(delta)
-    print(result)
-
-    assert qt.is_identical_with(result)
 
 
 if __name__ == '__main__':

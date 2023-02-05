@@ -1,3 +1,5 @@
+from copy import copy
+
 from implementation.quadtree import QuadTree
 from tasdia.layer import Layer
 from util import convert_color, reveal_color
@@ -79,7 +81,7 @@ class AreaLayer(Layer):
         }
 
         if full:
-            result['initial_tree'] = self.tree.saves()
+            result['initial_tree'] = self.initial_tree.saves()
             result['tree'] = self.tree.saves()
             result['deltas'] = list(map(AreaDelta.jsonify, self.deltas))
 
@@ -129,8 +131,8 @@ class AreaLayer(Layer):
         """
         initial_tree와 delta에 기반하여 tree를 계산합니다.
         """
-        tree = self.initial_tree
+        tree = copy(self.initial_tree)
         for delta in self.deltas:
-            tree = tree.apply(delta.delta)
+            tree.apply(delta.delta, clone=False)
         self.tree = tree
         return self

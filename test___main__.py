@@ -45,7 +45,7 @@ def test_new_area_delta():
     area_id = 1
 
     delta = QuadTree(None)
-    delta.set(3, 2, 1, 4)
+    delta.set(3, 2, 4, 0)
 
     data = {'time': 4008.278409090909, 'delta': delta.saves()}
     headers = {'Content-Type': 'application/json'}
