@@ -85,7 +85,7 @@ def post_api_map_id_area_new(map_id: int):
         return '설명 지정되지 않음', 400
 
     id_ = map_.get_new_area_id()
-    area_layer = AreaLayer(id_, description, dict(), QuadTree(None), list())
+    area_layer = AreaLayer(id_, description, dict(), QuadTree(None), QuadTree(None), list())
     map_.add_area(area_layer)
     map_.save()
 
@@ -188,7 +188,7 @@ def get_api_map_id_area_id_tree(map_id: int, area_id: int):
     if layer is None:
         return '영역 아이디에 해당하는 영역 없음', 404
 
-    return str(layer.tree.saves()), 200
+    return layer.tree.saves(), 200
 
 
 if __name__ == '__main__':

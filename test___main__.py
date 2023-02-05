@@ -45,9 +45,9 @@ def test_new_area_delta():
     area_id = 1
 
     delta = QuadTree(None)
-    delta.set(1, 1, 1, 0)
+    delta.set(3, 2, 1, 4)
 
-    data = {'time': 4009.278409090909, 'delta': delta.saves()}
+    data = {'time': 4008.278409090909, 'delta': delta.saves()}
     headers = {'Content-Type': 'application/json'}
 
     r = post(f'http://localhost:5000/api/map/{map_id}/area/{area_id}/new', data=dumps(data), headers=headers)

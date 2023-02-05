@@ -12,6 +12,9 @@
      "color": "#b9b8b8"
     }
    },
+   "initial_tree": [
+    0
+   ],
    "tree": [
     0
    ],
@@ -32,6 +35,9 @@
      "color": "#00ffff"
     }
    },
+   "initial_tree": [
+    1
+   ],
    "tree": [
     1
    ],

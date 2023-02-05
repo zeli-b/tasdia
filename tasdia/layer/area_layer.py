@@ -56,15 +56,17 @@ class AreaLayer(Layer):
         id_ = data.get('id')
         description = data.get('description')
         metadata = dict(map(lambda x: (x[0], AreaData.loads(x[1])), data.get('metadata').items()))
+        initial_tree = QuadTree.loads(data.get('initial_tree'))
         tree = QuadTree.loads(data.get('tree'))
         deltas = list(map(AreaDelta.loads, data.get('deltas')))
-        return AreaLayer(id_, description, metadata, tree, deltas)
+        return AreaLayer(id_, description, metadata, initial_tree, tree, deltas)
 
     def __init__(self, id_: int, description: str, metadata: dict[int, AreaData],
-                 tree: QuadTree, deltas: list[AreaDelta]):
+                 initial_tree: QuadTree, tree: QuadTree, deltas: list[AreaDelta]):
         self.id = id_
         self.description = description
         self.metadata = metadata
+        self.initial_tree = initial_tree
         self.tree = tree
         self.deltas = deltas
 
@@ -77,6 +79,7 @@ class AreaLayer(Layer):
         }
 
         if full:
+            result['initial_tree'] = self.tree.saves()
             result['tree'] = self.tree.saves()
             result['deltas'] = list(map(AreaDelta.jsonify, self.deltas))
 
@@ -120,4 +123,14 @@ class AreaLayer(Layer):
             i = start
 
         self.deltas.insert(i, delta)
+        return self.synchronize_tree()
+
+    def synchronize_tree(self) -> 'AreaLayer':
+        """
+        initial_tree와 delta에 기반하여 tree를 계산합니다.
+        """
+        tree = self.initial_tree
+        for delta in self.deltas:
+            tree = tree.apply(delta.delta)
+        self.tree = tree
         return self
