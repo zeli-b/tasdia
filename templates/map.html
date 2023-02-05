@@ -10,6 +10,11 @@
         body {
             overflow: hidden;
         }
+
+        .work-mode-selected {
+            background-color: #cecece;
+            border-radius: 2px;
+        }
     </style>
     <script src="{{ url_for('static', filename='js/mouse.js') }}"></script>
     <script src="{{ url_for('static', filename='js/quadtree.js') }}"></script>
@@ -24,8 +29,13 @@
 <div class="main-frame">
     <article class="main-container">
         <div class="tools-frame">
-            <ul>
-                <li>1</li>
+            <ul class="work-mode-list">
+                <li onclick="setWorkMode(WM_MOVE)" id="work-mode-move" class="work-mode-selected">
+                    <img src="{{ url_for('static', filename='image/move-mode.svg') }}" alt="이동 모드">
+                </li>
+                <li onclick="setWorkMode(WM_SELECT)" id="work-mode-select">
+                    <img src="{{ url_for('static', filename='image/select-mode.svg') }}" alt="선택 모드">
+                </li>
             </ul>
         </div>
         <div class="canvas-frame">
@@ -35,10 +45,14 @@
             <h4>영역 레이어</h4>
             <ul class="area-layers-list">
             </ul>
+            <div id="work-mode-select--options" style="display: none;">
+                <h4>선택 도구 설정</h4>
+                <p>이곳에 설정할 수 있는 여러가지 옵션이 표시되어야 합니다.</p>
+            </div>
             <h3>정보</h3>
             <table>
                 <tr><td>위도</td><td id="info-latitude">북위 0° 0′ 0.0″</td></tr>
-                <tr><td>경도</td><td id="info-longitude">동경 0° 0′ 0.0″</tdd></tr>
+                <tr><td>경도</td><td id="info-longitude">동경 0° 0′ 0.0″</td></tr>
             </table>
         </div>
     </article>

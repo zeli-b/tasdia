@@ -94,10 +94,37 @@ class Camera {
   }
 }
 
+const WM_MOVE = 'work-mode-move';
+const WM_SELECT = 'work-mode-select';
+
+let workMode = WM_MOVE;
+
+function setWorkMode(workModeToBe) {
+  let optionDiv;
+
+  document.getElementById(workMode).className = '';
+  if (workMode === WM_SELECT) {
+    optionDiv = document.getElementById('work-mode-select--options');
+
+    if (optionDiv !== null)
+      optionDiv.style.display = 'none';
+  }
+
+  workMode = workModeToBe;
+
+  document.getElementById(workMode).className = 'work-mode-selected';
+  if (workMode === WM_SELECT) {
+    optionDiv = document.getElementById(workMode + '--options')
+    if (optionDiv !== null)
+      optionDiv.style.display = 'block';
+  }
+}
+
 let camera;
 
 let canvas, context;
-let areaLayersList;
+let areaLayersList
+  , workModeList;
 let infoLatitude
   , infoLongitude;
 
@@ -107,6 +134,7 @@ function ready() {
   canvas = document.querySelector('#canvas');
   context = canvas.getContext('2d');
   areaLayersList = document.querySelector('.area-layers-list');
+  workModeList = document.querySelector('.work-mode-list');
 
   resize();
   camera = new Camera();
