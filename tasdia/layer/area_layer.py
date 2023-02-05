@@ -83,7 +83,10 @@ class AreaLayer(Layer):
         return result
 
     def get_new_data_id(self) -> int:
-        return max(map(lambda x: x.id, self.metadata.values())) + 1
+        try:
+            return max(map(lambda x: x.id, self.metadata.values())) + 1
+        except ValueError:
+            return 0
 
     def add_data(self, area_data: AreaData) -> 'AreaLayer':
         if area_data.id in self.metadata:

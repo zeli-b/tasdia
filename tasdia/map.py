@@ -25,7 +25,10 @@ class Map:
         }
 
     def get_new_area_id(self) -> int:
-        return max(map(lambda x: x.id, self.area_layers)) + 1
+        try:
+            return max(map(lambda x: x.id, self.area_layers)) + 1
+        except ValueError:
+            return 0
 
     def add_area(self, area_layer: AreaLayer) -> 'Map':
         self.area_layers.append(area_layer)

@@ -15,8 +15,9 @@ Tasdia는 인공 세계관 [사트](http://www.shtelo.org/)의
 | description | `str`             |
 | area_layers | `list[AreaLayer]` |
 
-* GET `/api/map`
-* GET `/api/map/{map.id}`
+##### GET `/api/map`
+
+##### GET `/api/map/{map.id}`
 
 #### 영역 레이어: AreaLayer
 
@@ -28,12 +29,22 @@ Tasdia는 인공 세계관 [사트](http://www.shtelo.org/)의
 | tree        | `QuadTree`            |
 | deltas      | `list[AreaDelta]`     |
 
-* GET `/api/map/{map.id}/area`
-* POST `/api/map/{map.id}/area/new`
-* GET `/api/map/{map.id}/area/{id}`
-* GET `/api/map/{map.id}/area/{id}/data`
-* POST `/api/map/{map.id}/area/{id}/data/new`
-* GET `/api/map/{map.id}/area/{id}/tree`
+##### GET `/api/map/{map.id}/area`
+
+##### POST `/api/map/{map.id}/area/new`
+
+* 필요: `description`
+
+##### GET `/api/map/{map.id}/area/{id}`
+
+##### GET `/api/map/{map.id}/area/{id}/data`
+
+##### POST `/api/map/{map.id}/area/{id}/data/new`
+
+* 필요: `color`, `#RRGGBB` 형태
+* 필요: `description`
+
+##### GET `/api/map/{map.id}/area/{id}/tree`
 
 ##### AreaData
 

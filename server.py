@@ -5,6 +5,7 @@ from flask import Flask, render_template, request
 from implementation.quadtree import QuadTree
 from tasdia import Map
 from tasdia.layer import AreaData, AreaLayer
+from util import reveal_color
 
 app = Flask(__name__)
 
@@ -132,6 +133,10 @@ def post_api_map_id_area_id_data_new(map_id: int, area_id: int):
         return '색 지정되지 않음', 400
     if not description:
         return '설명 지정되지 않음', 400
+    try:
+        color = reveal_color(color)
+    except ValueError:
+        return '색 형태 올바르지 않음 ("#RRGGBB" 형태로 주어져야 함)', 400
 
     id_ = area_layer.get_new_data_id()
     area_data = AreaData(id_, description, color)
