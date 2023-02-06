@@ -127,14 +127,46 @@ let areaLayersList
   , workModeList;
 let infoLatitude
   , infoLongitude;
+let selectModeUnitInput
+  , selectModeUnit = 8
+  , selectModeValueList
+  , selectedAreaValue;
 
 let areas = [];
+let selectedAreaIndex = 0;
+
+function selectAreaLayer(layerIndex) {
+  selectedAreaIndex = layerIndex;
+
+  selectModeValueList.innerHTML = '';
+
+  let area = areas[selectedAreaIndex];
+  Object.values(area.metadata).forEach(metadata => {
+    let li = document.createElement('li');
+
+    let radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'select-area-value'
+    radio.onchange = () => selectedAreaValue = metadata.id;
+    radio.id = `select-area-value--${metadata.id}`;
+    li.appendChild(radio);
+
+    let label = document.createElement('label');
+    label.innerText = metadata.description;
+    label.setAttribute('for', radio.id);
+    li.appendChild(label);
+
+    selectModeValueList.appendChild(li);
+  });
+}
 
 function ready() {
   canvas = document.querySelector('#canvas');
   context = canvas.getContext('2d');
   areaLayersList = document.querySelector('.area-layers-list');
   workModeList = document.querySelector('.work-mode-list');
+  selectModeUnitInput = document.querySelector('#select-unit');
+  selectModeValueList = document.querySelector('#select-area-value');
 
   resize();
   camera = new Camera();
@@ -169,6 +201,7 @@ function ready() {
         radio.type = 'radio';
         radio.name = 'arealayer';
         radio.checked = i === 0;
+        radio.onchange = () => selectAreaLayer(i);
         li.appendChild(radio);
 
         fetch(`/api/map/${MAP_ID}/area/${datum.id}/tree`)
@@ -214,6 +247,34 @@ function tickGPSInfo() {
   infoLongitude.innerText = `${side} ${degree}° ${minutes}′ ${seconds}″`;
 }
 
+function setSelectModeUnit() {
+  selectModeUnit = selectModeUnitInput.value;
+}
+
+let selectAreaVisible, selectAreaWidth, selectAreaHeight, selectAreaX, selectAreaY;
+
+function tickSelectMode() {
+  selectAreaVisible = true;
+
+  let widthUnit = WORLD_WIDTH / Math.pow(2, selectModeUnit);
+  let heightUnit = WORLD_HEIGHT / Math.pow(2, selectModeUnit);
+
+  selectAreaWidth = camera.getScreenLength(widthUnit);
+  selectAreaHeight = camera.getScreenLength(heightUnit);
+
+  let x = Math.floor(camera.getCameraX(mouseX) / widthUnit);
+  let y = Math.floor(camera.getCameraY(mouseY) / heightUnit);
+
+  selectAreaX = camera.getScreenX(x * widthUnit);
+  selectAreaY = camera.getScreenY(y * heightUnit);
+
+  y += Math.pow(2, selectModeUnit - 1);
+  x %= Math.pow(2, selectModeUnit);
+  y %= Math.pow(2, selectModeUnit);
+
+  // x, y, selectedAreaValue
+}
+
 /*
  * 화면 계산
  */
@@ -221,6 +282,10 @@ function tick() {
   if (canvas === undefined) return;
 
   tickGPSInfo();
+
+  if (workMode == WM_SELECT) {
+    tickSelectMode();
+  }
 }
 
 function renderBackground() {
@@ -241,6 +306,13 @@ function renderAreas() {
   }
 }
 
+function renderSelectArea() {
+  context.strokeStyle = 'black';
+  context.beginPath();
+  context.rect(selectAreaX, selectAreaY, selectAreaWidth, selectAreaHeight);
+  context.stroke();
+}
+
 /*
  * 화면 출력
  */
@@ -249,6 +321,7 @@ function render() {
 
   renderBackground();
   renderAreas();
+  renderSelectArea();
 }
 
 let fps = 60;

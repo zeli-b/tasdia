@@ -47,7 +47,11 @@
             </ul>
             <div id="work-mode-select--options" style="display: none;">
                 <h4>선택 도구 설정</h4>
-                <p>이곳에 설정할 수 있는 여러가지 옵션이 표시되어야 합니다.</p>
+                <p>
+                    <label for="select-unit">영역 선택 단위</label>
+                    <input type="number" id="select-unit" value="8" min="1" onchange="setSelectModeUnit()">
+                </p>
+                <ul id="select-area-value"></uli>
             </div>
             <h3>정보</h3>
             <table>
