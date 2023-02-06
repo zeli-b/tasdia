@@ -15,6 +15,10 @@ function posToPath(number, length) {
   return path;
 }
 
+function pathIntToPos(pathInt, unit) {
+  return parseInt((pathInt.toString(2).split('').reverse().join('') + '0'.repeat(unit)).slice(0, unit), 2);
+}
+
 class QuadTree {
   constructor(value) {
     this.value = value;
@@ -128,12 +132,12 @@ class QuadTree {
     let yPath = posToPath(yPos, unit);
 
     let now = this;
-    while (xPath || yPath) {
+    while (xPath.length || yPath.length) {
       let x = xPath ? xPath.shift() : 0;
       let y = yPath ? yPath.shift() : 0;
       let index = y * 2 + x;
 
-      if (!now.children.length) {
+      if (!now.isDivided()) {
         now.divide();
       }
 
@@ -150,6 +154,12 @@ class QuadTree {
     return tree;
   }
 
+  pathIntSet(xPath, yPath, unit, value) {
+    let xPos = pathIntToPos(xPath, unit);
+    let yPos = pathIntToPos(yPath, unit);
+    return this.set(xPos, yPos, unit, value);
+  }
+
   /*
    *``self``부터 최상위 트리까지를 순회하며 child가 가지고 있는 값이 모두 같다면 combine한다.
    *
@@ -163,8 +173,12 @@ class QuadTree {
     }
 
     let value = this.children[0].value;
+    let divided = this.children[0].isDivided();
     for (let i = 1; i < 4; i++) {
       if (this.children[i].value !== value) {
+        return;
+      }
+      if (this.children[i].isDivided() !== divided) {
         return;
       }
     }

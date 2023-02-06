@@ -27,10 +27,7 @@ class AreaLayer {
       this.surface.height = 4096;
       let surfaceContext = this.surface.getContext('2d');
 
-      let palette = {};
-      Object.values(this.metadata).forEach(metadatum => {
-        palette[metadatum.id] = metadatum.color;
-      });
+      let palette = this.getPalette();
       this.tree.render(surfaceContext, 0, 0, this.surface.width, this.surface.height, palette);
     }
 
@@ -41,6 +38,14 @@ class AreaLayer {
   toggleVisible() {
     this.visible = !this.visible;
     console.log(this);
+  }
+
+  getPalette() {
+    let palette = {};
+    Object.values(this.metadata).forEach(metadatum => {
+      palette[metadatum.id] = metadatum.color;
+    });
+    return palette
   }
 }
 
@@ -135,29 +140,33 @@ let selectModeUnitInput
 let areas = [];
 let selectedAreaIndex = 0;
 
+function appendAreaValue(id, description) {
+  let li = document.createElement('li');
+
+  let radio = document.createElement('input');
+  radio.type = 'radio';
+  radio.name = 'select-area-value'
+  radio.onchange = () => selectedAreaValue = id;
+  radio.id = `select-area-value--${id}`;
+  li.appendChild(radio);
+
+  let label = document.createElement('label');
+  label.innerText = description;
+  label.setAttribute('for', radio.id);
+  li.appendChild(label);
+
+  selectModeValueList.appendChild(li);
+}
+
 function selectAreaLayer(layerIndex) {
   selectedAreaIndex = layerIndex;
 
   selectModeValueList.innerHTML = '';
 
+  appendAreaValue(null, '지우개')
+
   let area = areas[selectedAreaIndex];
-  Object.values(area.metadata).forEach(metadata => {
-    let li = document.createElement('li');
-
-    let radio = document.createElement('input');
-    radio.type = 'radio';
-    radio.name = 'select-area-value'
-    radio.onchange = () => selectedAreaValue = metadata.id;
-    radio.id = `select-area-value--${metadata.id}`;
-    li.appendChild(radio);
-
-    let label = document.createElement('label');
-    label.innerText = metadata.description;
-    label.setAttribute('for', radio.id);
-    li.appendChild(label);
-
-    selectModeValueList.appendChild(li);
-  });
+  Object.values(area.metadata).forEach(metadata => appendAreaValue(metadata.id, metadata.description));
 }
 
 function ready() {
@@ -252,6 +261,11 @@ function setSelectModeUnit() {
 }
 
 let selectAreaVisible, selectAreaWidth, selectAreaHeight, selectAreaX, selectAreaY;
+let selectModeDelta = new QuadTree(null)
+  , selectModeDeltaCanvas = document.createElement('canvas')
+  , selectModeDeltaContext = selectModeDeltaCanvas.getContext('2d')
+  , selectModeDeltaRenderNeeded = false;
+selectModeDeltaCanvas.width = selectModeDeltaCanvas.height = 4096;
 
 function tickSelectMode() {
   selectAreaVisible = true;
@@ -272,7 +286,10 @@ function tickSelectMode() {
   x %= Math.pow(2, selectModeUnit);
   y %= Math.pow(2, selectModeUnit);
 
-  // x, y, selectedAreaValue
+  if (mouseLeft && selectedAreaValue !== undefined) {
+    selectModeDelta.pathIntSet(x, y, selectModeUnit, selectedAreaValue);
+    selectModeDeltaRenderNeeded = true;
+  }
 }
 
 /*
@@ -283,7 +300,7 @@ function tick() {
 
   tickGPSInfo();
 
-  if (workMode == WM_SELECT) {
+  if (workMode === WM_SELECT) {
     tickSelectMode();
   }
 }
@@ -307,6 +324,23 @@ function renderAreas() {
 }
 
 function renderSelectArea() {
+  if (!selectAreaVisible) return;
+
+  if (selectModeDeltaRenderNeeded) {
+    selectModeDeltaContext.clearRect(0, 0, selectModeDeltaCanvas.width, selectModeDeltaCanvas.height);
+    selectModeDelta.render(
+      selectModeDeltaContext,
+      0, 0, selectModeDeltaCanvas.width, selectModeDeltaCanvas.height,
+      areas[selectedAreaIndex].getPalette()
+    );
+    selectModeDeltaRenderNeeded = false;
+  }
+  context.drawImage(
+    selectModeDeltaCanvas,
+    camera.getScreenX(0), camera.getScreenY(-WORLD_HEIGHT / 2),
+    camera.getScreenLength(WORLD_WIDTH), camera.getScreenLength(WORLD_HEIGHT)
+  );
+
   context.strokeStyle = 'black';
   context.beginPath();
   context.rect(selectAreaX, selectAreaY, selectAreaWidth, selectAreaHeight);
